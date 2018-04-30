@@ -1,0 +1,29 @@
+#jinja2: lstrip_blocks: "True"
+---
+filebeat.prospectors:
+{% for item in filebeat.prospectors %}
+  - type: {{ item.input_type }}
+    name: {{ item.name }}
+    paths: {{ item.path }}
+    tags: {{ item.tags | to_json }}
+    fields:
+      hostname: {{ ansible_hostname }}
+      service: {{ item.fields.service }}
+      environment: {{ item.fields.environment }}
+  {% if item.multiline is defined %}
+    multiline:
+      pattern: {{ item.multiline.pattern }}
+      negate: {{ item.multiline.negate }}
+      match: {{ item.multiline.match }}
+  {% endif %}
+{% endfor %}
+
+{% if filebeat.output.logstash is defined %}
+output.logstash:
+  hosts: {{ filebeat.output.logstash.hosts }}
+  ssl.enabled: true
+  ssl.certificate_authorities: ["{{ filebeat_ssl_ca_location }}"]
+  ssl.certificate: "{{ filebeat_ssl_crt_location }}"
+  ssl.key: "{{ filebeat_ssl_key_location }}"
+  ssl.verification_mode: none
+{% endif %}

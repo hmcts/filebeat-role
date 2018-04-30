@@ -1,0 +1,55 @@
+---
+- name: Install Filebeat packages
+  become: true
+  yum:
+    name: filebeat-{{ filebeat_pkg_version }}
+    state: present
+    disablerepo: "*"
+    enablerepo: "elasticsearch-6.x"
+  notify:
+    - restart filebeat
+
+- name: Ensure certs directory exists
+  become: true
+  file:
+    dest: "/etc/filebeat/certs"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: Copy SSL cert
+  become: true
+  copy:
+    dest: "{{ filebeat_ssl_crt_location }}"
+    content: "{{ filebeat_ssl_crt }}"
+
+- name: Copy SSL key
+  become: true
+  copy:
+    dest: "{{ filebeat_ssl_key_location }}"
+    content: "{{ filebeat_ssl_key }}"
+
+- name: Copy SSL ca
+  become: true
+  copy:
+    dest: "{{ filebeat_ssl_ca_location }}"
+    content: "{{ filebeat_ssl_ca }}"
+
+- name: Configure Filebeat
+  become: true
+  template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart filebeat
+
+- name: Start Filebeat on boot
+  service:
+    name: filebeat
+    enabled: true
+    state: started
+  become: true

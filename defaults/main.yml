@@ -1,0 +1,18 @@
+---
+filebeat_pkg_version: "{{ elasticstack_version }}"
+filebeat_ssl_ca_location: "/etc/filebeat/certs/reform.hmcts.net.ca"
+filebeat_ssl_crt_location: "/etc/filebeat/certs/reform.hmcts.net.crt"
+filebeat_ssl_key_location: "/etc/filebeat/certs/reform.hmcts.net.key"
+filebeat_ssl_ca: ""
+filebeat_ssl_crt: ""
+filebeat_ssl_key: ""
+# Environment variable used for tagging the source of the data
+filebeat_realenv: ""
+
+# Example prospector configuration that ships /var/log/messages to a local logstash instance
+filebeat:
+  output:
+    logstash:
+      hosts: "127.0.0.1:5044"
+  prospectors:
+    - {"name": "messages", "path": "/var/log/messages*", "input_type":"log", "tags":"['{{ filebeat_realenv }}']", "fields":{ "hostname": "{{ inventory_hostname }}", "service": "systemlogs", "environment": "{{ filebeat_realenv }}"}}

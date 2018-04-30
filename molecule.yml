@@ -1,0 +1,20 @@
+---
+dependency:
+  name: galaxy
+  requirements_file: requirements.yml
+driver:
+  name: docker
+docker:
+  containers:
+    - name: filebeat-role-${BRANCH_NAME}-${BUILD_NUMBER}
+      image: centos/systemd
+      image_version: latest
+      privileged: true
+      cap_add:
+        - SYS_ADMIN
+      environment:
+        http_proxy: ${http_proxy}
+ansible:
+  playbook: tests/playbook.yml
+verifier:
+  name: testinfra
